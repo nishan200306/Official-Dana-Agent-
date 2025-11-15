@@ -3,268 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Style Chat</title>
-    <!-- Parse SDK -->
-    <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+    <title>Chat with Support</title>
     <style>
-        /* All CSS from previous example remains the same */
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; background-color: #d1d7db; } #auth-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; width: 100%; } .login-section { width: 100%; max-width: 400px; padding: 30px; background-color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; text-align: center; } .login-section h2 { margin-top: 0; margin-bottom: 25px; color: #075E54; } .form-group { margin-bottom: 15px; text-align: left; } .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; } .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } .form-button { width: 100%; padding: 12px; background-color: #128C7E; color: white; border: none; border-radius: 4px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-top: 10px; } .form-button:hover { background-color: #075E54; } .error-message { color: #d93025; margin-top: 15px; font-size: 0.9em; height: 1em; } .chat-container { display: none; width: 100%; height: 100vh; flex-direction: column; background-color: #f0f0f0; } .chat-header { background-color: #075E54; color: white; padding: 10px 15px; display: flex; align-items: center; flex-shrink: 0; } .profile-pic { width: 40px; height: 40px; border-radius: 50%; margin-right: 15px; object-fit: cover; } .contact-info { display: flex; flex-direction: column; } .contact-name-line { display: flex; align-items: center; gap: 6px; } .contact-name-line h3 { margin: 0; font-size: 1.1em; } .verification-tick { width: 16px; height: 16px; color: #34B7F1; } .contact-info p { margin: 0; font-size: 0.8em; opacity: 0.8; } .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); } .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; margin-bottom: 10px; line-height: 1.4; position: relative; word-wrap: break-word; } .message p { margin: 0; } .message.image-message { padding: 5px; background-color: transparent !important; } .message-image { max-width: 250px; border-radius: 6px; display: block; } .message.sent { background-color: #dcf8c6; align-self: flex-end; } .message.received { background-color: #ffffff; align-self: flex-start; } .timestamp { font-size: 0.7em; color: #888; display: block; text-align: right; margin-top: 4px; } .chat-input-form { display: flex; padding: 10px; background-color: #f0f0f0; border-top: 1px solid #ddd; align-items: center; flex-shrink: 0; } #message-input { flex-grow: 1; border: none; padding: 12px 20px; border-radius: 25px; font-size: 1em; min-width: 0; } #message-input:focus { outline: none; } .icon-button { background: none; border: none; cursor: pointer; padding: 0; margin-left: 10px; display: flex; align-items: center; justify-content: center; color: #54656f; flex-shrink: 0; } .icon-button svg { width: 24px; height: 24px; } #send-button { background-color: #128C7E; border: none; border-radius: 50%; width: 45px; height: 45px; margin-left: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: white; transition: background-color 0.2s; flex-shrink: 0; } #send-button:hover { background-color: #075E54; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; background-color: #d1d7db; }
+        
+        /* --- Login Screen --- */
+        #auth-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; width: 100%; padding: 20px; box-sizing: border-box; }
+        .login-section { width: 100%; max-width: 400px; padding: 30px; background-color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; text-align: center; }
+        .login-section h2 { margin-top: 0; margin-bottom: 25px; color: #075E54; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        .form-button { width: 100%; padding: 12px; background-color: #128C7E; color: white; border: none; border-radius: 4px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .form-button:hover { background-color: #075E54; }
+        .error-message { color: #d93025; margin-top: 15px; font-size: 0.9em; height: 1em; }
+
+        /* --- Banned Screen --- */
+        #banned-screen { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; width: 100%; background-color: #111b21; color: #e9edef; text-align: center; padding: 20px; box-sizing: border-box; }
+        .banned-icon { position: relative; width: 100px; height: 100px; margin-bottom: 30px; }
+        .banned-icon .profile-shape { width: 100%; height: 100%; border-radius: 50%; background-color: #37444c; display: flex; justify-content: center; align-items: center; }
+        .banned-icon .profile-shape svg { fill: #8696a0; width: 60%; height: 60%; }
+        .banned-icon .block-shape { position: absolute; bottom: -5px; right: -5px; width: 40px; height: 40px; background-color: #f15c5c; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 4px solid #111b21; }
+        .banned-icon .block-shape svg { fill: #111b21; width: 60%; height: 60%; }
+        #banned-screen h2 { font-size: 1.5em; font-weight: 400; margin: 0; }
+        #banned-screen p { font-size: 1em; color: #8696a0; margin-top: 10px; }
+
+        /* --- Chat Screen --- */
+        .chat-container { display: none; width: 100%; height: 100vh; flex-direction: column; background-color: #f0f0f0; }
+        .chat-header { background-color: #075E54; color: white; padding: 10px 15px; display: flex; align-items: center; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .profile-pic { width: 40px; height: 40px; border-radius: 50%; margin-right: 15px; object-fit: cover; }
+        .contact-info { display: flex; flex-direction: column; } .contact-name-line { display: flex; align-items: center; gap: 6px; } .contact-name-line h3 { margin: 0; font-size: 1.1em; } .verification-tick { width: 16px; height: 16px; } .contact-info p { margin: 0; font-size: 0.8em; opacity: 0.8; }
+        .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
+        .message { max-width: 75%; padding: 8px 12px; border-radius: 10px; margin-bottom: 10px; line-height: 1.4; position: relative; } 
+        .message p { margin: 0; word-wrap: break-word; }
+        .message.image-message { padding: 5px; } 
+        .message-image { max-width: 100%; max-height: 300px; border-radius: 6px; display: block; cursor: pointer;} 
+        .message.sent { background-color: #dcf8c6; align-self: flex-end; border-top-right-radius: 0; } 
+        .message.received { background-color: #ffffff; align-self: flex-start; border-top-left-radius: 0; } 
+        .timestamp { font-size: 0.7em; color: #888; display: block; text-align: right; margin-top: 4px; }
+        .system-message { align-self: center; margin: 10px 0; padding: 6px 12px; background-color: #e1f2fb; border-radius: 8px; font-size: 0.85em; color: #5a5a5a; }
+        .chat-input-form { display: flex; padding: 10px; background-color: #f0f0f0; border-top: 1px solid #ddd; align-items: center; flex-shrink: 0; } #message-input { flex-grow: 1; border: none; padding: 12px 20px; border-radius: 25px; font-size: 1em; min-width: 0; } #message-input:focus { outline: none; } .icon-button { background: none; border: none; cursor: pointer; padding: 0; margin-left: 10px; display: flex; align-items: center; justify-content: center; color: #54656f; flex-shrink: 0; } .icon-button svg { width: 24px; height: 24px; } #send-button { background-color: #128C7E; border: none; border-radius: 50%; width: 45px; height: 45px; margin-left: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: white; transition: background-color 0.2s; flex-shrink: 0; } #send-button:hover { background-color: #075E54; }
     </style>
 </head>
 <body>
     <div id="auth-wrapper">
         <div id="login-container" class="login-section">
-            <h2>Enter Your Details</h2>
-            <form id="login-form">
-                <div class="form-group"><label for="full-name">Full Name</label><input type="text" id="full-name" required></div>
-                <div class="form-group"><label for="nic">NIC Number (as Password)</label><input type="text" id="nic" required></div>
-                <div class="form-group"><label for="whatsapp-no">WhatsApp Number (as Username)</label><input type="tel" id="whatsapp-no" placeholder="07xxxxxxxx" required></div>
-                <div class="form-group"><label for="address">Address</label><textarea id="address" rows="2" required></textarea></div>
-                <p class="error-message" id="login-error"></p>
-                <button type="submit" class="form-button">Next</button>
-            </form>
-        </div>
-        <div id="verification-container" class="login-section" style="display: none;">
-            <h2>Enter Verification Code</h2>
-            <p>A 5-digit code has been set by the admin. Please enter it below.</p>
-            <form id="verification-form">
-                <div class="form-group"><label for="code-input">Verification Code</label><input type="text" id="code-input" maxlength="5" style="text-align: center; font-size: 1.5em; letter-spacing: 10px;"></div>
-                <p class="error-message" id="verification-error"></p>
-                <button type="submit" class="form-button">Confirm & Login</button>
-            </form>
+            <h2>Enter Your Name</h2>
+            <form id="login-form"><div class="form-group"><label for="user-name">Your Name</label><input type="text" id="user-name" placeholder="e.g., Kamal Perera" required></div><p class="error-message" id="login-error"></p><button type="submit" class="form-button">Start Chatting</button></form>
         </div>
     </div>
+    
+    <div id="banned-screen">
+        <div class="banned-icon"><div class="profile-shape"><svg viewBox="0 0 24 24"><path d="M12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path></svg></div><div class="block-shape"><svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M17,15.59L15.59,17L12,13.41L8.41,17L7,15.59L10.59,12L7,8.41L8.41,7L12,10.59L15.59,7L17,8.41L13.41,12L17,15.59Z"></path></svg></div></div>
+        <h2>This account can no longer use this service</h2><p>Your access has been restricted by an administrator.</p>
+    </div>
+
     <div class="chat-container">
-        <div class="chat-header"><img src="https://i.postimg.cc/HxHWwkV2/wa-94710957023-dp-1.jpg" alt="Profile Pic" class="profile-pic"><div class="contact-info"><div class="contact-name-line"><h3>Official Dana</h3><svg viewBox="0 0 24 24" class="verification-tick"><path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"></path></svg></div><p>online</p></div></div>
+        <div class="chat-header">
+            <img src="https://i.postimg.cc/HxHWwkV2/wa-94710957023-dp-1.jpg" alt="Profile Pic" class="profile-pic">
+            <div class="contact-info">
+                <div class="contact-name-line">
+                    <h3>Official Dana</h3>
+                    <img src="https://i.postimg.cc/GmfPVDvm/1001086957.png" alt="Verified" class="verification-tick">
+                </div>
+                <p>online</p>
+            </div>
+        </div>
         <div class="chat-messages" id="chat-messages"></div>
         <div class="chat-input-form"><input type="text" id="message-input" placeholder="Type a message..."><button class="icon-button" id="attach-button"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M16.5 6V17.5C16.5 19.71 14.71 21.5 12.5 21.5C10.29 21.5 8.5 19.71 8.5 17.5V5C8.5 3.62 9.62 2.5 11 2.5C12.38 2.5 13.5 3.62 13.5 5V15.5C13.5 16.05 13.05 16.5 12.5 16.5C11.95 16.5 11.5 16.05 11.5 15.5V6H10V15.5C10 16.88 11.12 18 12.5 18C13.88 18 15 16.88 15 15.5V5C15 2.79 13.21 1 11 1C8.79 1 7 2.79 7 5V17.5C7 20.26 9.24 22.5 12 22.5C14.76 22.5 17 20.26 17 17.5V6H16.5Z"></path></svg></button><button id="send-button"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg></button></div>
     </div>
+    
     <input type="file" id="image-input" accept="image/*" style="display: none;">
 
+    <!-- Parse JS SDK -->
+    <script src="https://unpkg.com/parse/dist/parse.min.js"></script>
+    
     <script>
-        // No Master Key here - this is the public-facing user app.
-        Parse.initialize("7FZk3EhStsRxtd5kSkjx4WNuWYwHljw7oAHe0xeA", "tjbj3H5HZ5Qyx3HGiTB9LMtkDIy1G2eCFYWcnCIm");
+        // Parse/Back4App setup
+        const APP_ID = 'QyI8gxZTEBhslCo5skgKW6LjygMlJ5Vlcvodv29b';
+        const JS_KEY = 'iCDLv5BUIyudVhgjy0wvfqMymNt5wMya6YFwxzNi';
+        const LIVE_QUERY_URL = 'wss://QyI8gxZTEBhslCo5skgKW6LjygMlJ5Vlcvodv29b.b4a.io';
+        Parse.initialize(APP_ID, JS_KEY);
         Parse.serverURL = 'https://parseapi.back4app.com';
+        if (LIVE_QUERY_URL && LIVE_QUERY_URL.startsWith('wss')) {
+          Parse.liveQueryServerURL = LIVE_QUERY_URL;
+        }
+
+        // DOM refs
+        let currentUserName = '';
+        let currentChatUser = null; // Parse.Object('ChatUser')
+        let msgSubscription = null;
+        let userSubscription = null;
+        const renderedIds = new Set();
 
         const authWrapper = document.getElementById('auth-wrapper');
-        const loginContainer = document.getElementById('login-container');
-        const verificationContainer = document.getElementById('verification-container');
-        const chatContainer = document.querySelector('.chat-container');
         const loginForm = document.getElementById('login-form');
-        const verificationForm = document.getElementById('verification-form');
+        const userNameInput = document.getElementById('user-name');
+        const loginError = document.getElementById('login-error');
+
+        const bannedScreen = document.getElementById('banned-screen');
+
+        const chatContainer = document.querySelector('.chat-container');
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
         const attachButton = document.getElementById('attach-button');
         const imageInput = document.getElementById('image-input');
-        
-        let currentChatSession = null;
-        let messageSubscription = null;
 
-        window.addEventListener('load', async () => {
-            const currentUser = Parse.User.current();
-            if (currentUser && currentUser.get('isVerified')) {
-                await showChatScreen(currentUser);
+        // Utils
+        function escapeHtml(unsafe) {
+          return (typeof unsafe !== 'string') ? '' :
+            unsafe.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+        }
+        function normalizeName(name) {
+          return name.trim().replace(/\s+/g, ' ');
+        }
+        function atBottom() {
+          return chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 30;
+        }
+        function scrollToBottom() {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Screens
+        function showLoginScreen() {
+          authWrapper.style.display = 'flex';
+          chatContainer.style.display = 'none';
+          bannedScreen.style.display = 'none';
+        }
+        function showBannedScreen() {
+          authWrapper.style.display = 'none';
+          chatContainer.style.display = 'none';
+          bannedScreen.style.display = 'flex';
+        }
+        function showChatScreen() {
+          authWrapper.style.display = 'none';
+          bannedScreen.style.display = 'none';
+          chatContainer.style.display = 'flex';
+        }
+
+        // Parse data helpers
+        async function ensureChatUser(displayName) {
+          const ChatUser = Parse.Object.extend('ChatUser');
+          const normalizedName = normalizeName(displayName).toLowerCase();
+          const q = new Parse.Query(ChatUser);
+          q.equalTo('normalizedName', normalizedName);
+          let user = await q.first();
+          if (!user) {
+            user = new ChatUser();
+            user.set('displayName', normalizeName(displayName));
+            user.set('normalizedName', normalizedName);
+            user.set('isBanned', false);
+            await user.save();
+          } else {
+            if (user.get('displayName') !== normalizeName(displayName)) {
+              user.set('displayName', normalizeName(displayName));
+              await user.save();
             }
-        });
+          }
+          return user;
+        }
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fullName = document.getElementById('full-name').value.trim();
-            const nic = document.getElementById('nic').value.trim();
-            const whatsappNo = document.getElementById('whatsapp-no').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const loginError = document.getElementById('login-error');
-            loginError.textContent = 'Processing...';
+        function createMessageBubble(text, type, timestamp) {
+          const timeStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const messageDiv = document.createElement('div');
+          messageDiv.classList.add('message', type);
+          messageDiv.innerHTML = `<p>${escapeHtml(text)}</p><span class="timestamp">${timeStr}</span>`;
+          chatMessages.appendChild(messageDiv);
+        }
 
-            try {
-                await Parse.User.logIn(whatsappNo, nic);
-            } catch (error) {
-                if (error.code === 101) {
-                    const user = new Parse.User();
-                    user.set('username', whatsappNo);
-                    user.set('password', nic);
-                    user.set('fullName', fullName);
-                    user.set('nic', nic);
-                    user.set('address', address);
-                    user.set('isVerified', false);
-                    try {
-                        await user.signUp();
-                    } catch (signUpError) {
-                        loginError.textContent = `Registration Error: ${signUpError.message}`;
-                        return;
-                    }
-                } else {
-                    loginError.textContent = `Login Error: ${error.message}`;
-                    return;
-                }
-            }
-            
-            loginContainer.style.display = 'none';
-            verificationContainer.style.display = 'block';
-            loginError.textContent = '';
-        });
+        function createImageMessage(imageUrl, type, timestamp) {
+          const timeStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const messageDiv = document.createElement('div');
+          messageDiv.classList.add('message', type, 'image-message');
 
-        verificationForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const enteredCode = document.getElementById('code-input').value.trim();
-            const verificationError = document.getElementById('verification-error');
-            const currentUser = Parse.User.current();
+          if (imageUrl) {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.className = 'message-image';
+            img.addEventListener('click', () => window.open(imageUrl, '_blank'));
+            messageDiv.appendChild(img);
+          } else {
+            const p = document.createElement('p');
+            p.textContent = '[Image unavailable]';
+            messageDiv.appendChild(p);
+          }
 
-            if (!enteredCode) { verificationError.textContent = 'Please enter the code.'; return; }
-            
-            try {
-                verificationError.textContent = 'Verifying...';
-                await currentUser.fetch();
-                
-                if (currentUser.get('adminCode') === enteredCode) {
-                    currentUser.set('isVerified', true);
-                    await currentUser.save();
-                    await showChatScreen(currentUser);
-                } else {
-                    verificationError.textContent = 'Invalid verification code. Please check and try again.';
-                }
-            } catch (error) {
-                verificationError.textContent = `Error: ${error.message}`;
-            }
-        });
+          const ts = document.createElement('span');
+          ts.className = 'timestamp';
+          ts.textContent = timeStr;
+          messageDiv.appendChild(ts);
 
-        async function showChatScreen(user) {
-            authWrapper.style.display = 'none';
-            chatContainer.style.display = 'flex';
-            
-            const ChatSession = Parse.Object.extend('ChatSession');
-            const query = new Parse.Query(ChatSession);
-            query.equalTo('user', user);
-            currentChatSession = await query.first();
+          chatMessages.appendChild(messageDiv);
+        }
 
-            if (!currentChatSession) {
-                currentChatSession = new ChatSession();
-                currentChatSession.set('user', user);
-                currentChatSession.set('lastActivity', new Date());
-                currentChatSession.set('lastMessagePreview', 'New chat started.');
-                currentChatSession.set('agentUnreadCount', 1);
-                
-                const acl = new Parse.ACL();
-                acl.setReadAccess(user, true);
-                acl.setWriteAccess(user, true);
-                acl.setRoleReadAccess("Admin", true);
-                acl.setRoleWriteAccess("Admin", true);
-                currentChatSession.setACL(acl);
+        function renderOneMessage(obj) {
+          if (!obj || renderedIds.has(obj.id)) return;
+          renderedIds.add(obj.id);
+          const sender = (obj.get('sender') || '').toLowerCase();
+          const direction = sender === 'user' ? 'sent' : 'received';
+          const type = obj.get('type') || 'text';
+          const ts = obj.createdAt ? obj.createdAt.getTime() : Date.now();
 
-                await currentChatSession.save();
-            }
-
-            loadMessages();
-            subscribeToMessages();
+          if (type === 'image') {
+            const file = obj.get('image');
+            const url = file ? file.url() : '';
+            createImageMessage(url, direction, ts);
+          } else {
+            const content = obj.get('content') || '';
+            createMessageBubble(content, direction, ts);
+          }
         }
 
         async function loadMessages() {
-            chatMessages.innerHTML = '';
-            const Message = Parse.Object.extend('Message');
-            const query = new Parse.Query(Message);
-            query.equalTo('session', currentChatSession);
-            query.ascending('createdAt');
-            const results = await query.find();
-            results.forEach(createMessageBubble);
+          if (!currentChatUser) return;
+          const wasAtBottom = atBottom();
+          const ChatMessage = Parse.Object.extend('ChatMessage');
+          const q = new Parse.Query(ChatMessage);
+          q.equalTo('chatUser', currentChatUser);
+          q.ascending('createdAt');
+          q.limit(1000);
+          const results = await q.find();
+
+          chatMessages.innerHTML = '';
+          renderedIds.clear();
+
+          if (!results.length) {
+            chatMessages.innerHTML = `<div class="system-message">This is the beginning of your conversation.</div>`;
+          } else {
+            results.forEach(renderOneMessage);
+          }
+
+          // Mark Admin messages as seen by user
+          await markAdminMessagesAsSeen();
+
+          if (wasAtBottom || results.length <= 30) scrollToBottom();
+        }
+
+        async function markAdminMessagesAsSeen() {
+          if (!currentChatUser) return;
+          const q = new Parse.Query('ChatMessage');
+          q.equalTo('chatUser', currentChatUser);
+          q.equalTo('sender', 'Admin');
+          q.notEqualTo('seenByUser', true);
+          q.limit(1000);
+          const msgs = await q.find();
+          if (msgs.length) {
+            msgs.forEach(m => m.set('seenByUser', true));
+            await Parse.Object.saveAll(msgs);
+          }
         }
 
         async function subscribeToMessages() {
-            if(messageSubscription) messageSubscription.unsubscribe();
+          if (msgSubscription) {
+            try { await msgSubscription.unsubscribe(); } catch (_) {}
+            msgSubscription = null;
+          }
+          const ChatMessage = Parse.Object.extend('ChatMessage');
+          const q = new Parse.Query(ChatMessage);
+          q.equalTo('chatUser', currentChatUser);
+          msgSubscription = await q.subscribe();
 
-            const query = new Parse.Query('Message');
-            query.equalTo('session', currentChatSession);
-            messageSubscription = await query.subscribe();
-
-            messageSubscription.on('create', (message) => {
-                if (message.get('sender') === 'agent') {
-                    createMessageBubble(message);
-                }
-            });
+          msgSubscription.on('create', async (obj) => {
+            const wasAt = atBottom();
+            renderOneMessage(obj);
+            if (obj.get('sender') === 'Admin') {
+              try { obj.set('seenByUser', true); await obj.save(); } catch (_) {}
+            }
+            if (wasAt) scrollToBottom();
+          });
         }
 
-        async function sendMessage(text, imageFile = null) {
-            const Message = Parse.Object.extend('Message');
-            const message = new Message();
+        async function subscribeToBan() {
+          if (userSubscription) {
+            try { await userSubscription.unsubscribe(); } catch (_) {}
+            userSubscription = null;
+          }
+          const ChatUser = Parse.Object.extend('ChatUser');
+          const q = new Parse.Query(ChatUser);
+          q.equalTo('objectId', currentChatUser.id);
+          userSubscription = await q.subscribe();
 
-            message.set('sender', 'user');
-            message.set('session', currentChatSession);
-            
-            if (text) message.set('text', text);
-            if (imageFile) {
-                const parseFile = new Parse.File(imageFile.name, imageFile);
-                await parseFile.save();
-                message.set('image', parseFile);
+          userSubscription.on('update', (obj) => {
+            if (obj.get('isBanned')) {
+              showBannedScreen();
             }
-
-            const acl = new Parse.ACL();
-            acl.setReadAccess(Parse.User.current(), true);
-            acl.setRoleReadAccess("Admin", true);
-            message.setACL(acl);
-            
-            try {
-                const savedMessage = await message.save();
-                createMessageBubble(savedMessage);
-                
-                currentChatSession.set('lastActivity', new Date());
-                currentChatSession.set('lastMessagePreview', text ? text : '📷 Photo');
-                currentChatSession.increment('agentUnreadCount');
-                await currentChatSession.save();
-
-            } catch (error) {
-                console.error('Error sending message: ', error);
-                alert('Could not send message. Please check your connection.');
-            }
+          });
         }
 
-        function createMessageBubble(msg) {
-            const type = msg.get('sender') === 'user' ? 'sent' : 'received';
-            const text = msg.get('text');
-            const image = msg.get('image');
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', type);
-            
-            if (image) {
-                messageDiv.classList.add('image-message');
-                const imageEl = document.createElement('img');
-                imageEl.src = image.url();
-                imageEl.classList.add('message-image');
-                messageDiv.appendChild(imageEl);
+        async function bootstrapFor(name) {
+          try {
+            currentChatUser = await ensureChatUser(name);
+            if (currentChatUser.get('isBanned')) {
+              showBannedScreen();
+              return;
             }
-            if (text) {
-                const textP = document.createElement('p');
-                textP.textContent = text;
-                messageDiv.appendChild(textP);
-            }
-            
-            const timeSpan = document.createElement('span');
-            timeSpan.classList.add('timestamp');
-            timeSpan.textContent = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            messageDiv.appendChild(timeSpan);
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            showChatScreen();
+            await loadMessages();
+            await subscribeToMessages();
+            await subscribeToBan();
+          } catch (e) {
+            console.error(e);
+            loginError.textContent = 'Network error. Please try again.';
+            showLoginScreen();
+          }
         }
 
-        sendButton.addEventListener('click', () => {
-            const text = messageInput.value.trim();
-            if (text) {
-                sendMessage(text, null);
-                messageInput.value = '';
-            }
+        // Events
+        window.addEventListener('load', async () => {
+          currentUserName = sessionStorage.getItem('chatUserName') || '';
+          if (currentUserName) {
+            await bootstrapFor(currentUserName);
+          } else {
+            showLoginScreen();
+          }
         });
-        messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendButton.click(); } });
-        
+
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const raw = userNameInput.value || '';
+          const normalized = normalizeName(raw);
+          if (!normalized) {
+            loginError.textContent = 'Please enter a valid name.';
+            return;
+          }
+          loginError.textContent = '';
+          currentUserName = normalized;
+          sessionStorage.setItem('chatUserName', currentUserName);
+          await bootstrapFor(currentUserName);
+        });
+
+        async function handleSendAction() {
+          const content = messageInput.value.trim();
+          if (!content || !currentChatUser) return;
+
+          // If banned mid-session
+          await currentChatUser.fetch({ force: true });
+          if (currentChatUser.get('isBanned')) {
+            showBannedScreen();
+            return;
+          }
+
+          try {
+            const ChatMessage = Parse.Object.extend('ChatMessage');
+            const msg = new ChatMessage();
+            msg.set('chatUser', currentChatUser);
+            msg.set('sender', 'User');
+            msg.set('type', 'text');
+            msg.set('content', content);
+            await msg.save();
+
+            // For sorting fallback (optional)
+            try { currentChatUser.set('lastMessageAt', new Date()); await currentChatUser.save(); } catch (_) {}
+
+            renderOneMessage(msg); // LiveQuery will also fire; guarded with renderedIds
+            scrollToBottom();
+
+            messageInput.value = '';
+            messageInput.focus();
+          } catch (e) {
+            console.error(e);
+            alert('Could not send message. Please try again.');
+          }
+        }
+
+        async function handleImageFileSend(file) {
+          if (!file || !currentChatUser) return;
+
+          await currentChatUser.fetch({ force: true });
+          if (currentChatUser.get('isBanned')) {
+            showBannedScreen();
+            return;
+          }
+
+          try {
+            const parseFile = new Parse.File(file.name || 'image.jpg', file);
+            await parseFile.save();
+
+            const ChatMessage = Parse.Object.extend('ChatMessage');
+            const msg = new ChatMessage();
+            msg.set('chatUser', currentChatUser);
+            msg.set('sender', 'User');
+            msg.set('type', 'image');
+            msg.set('image', parseFile);
+            await msg.save();
+
+            try { currentChatUser.set('lastMessageAt', new Date()); await currentChatUser.save(); } catch (_) {}
+
+            renderOneMessage(msg);
+            scrollToBottom();
+          } catch (e) {
+            console.error(e);
+            alert('Could not send image. Please try again.');
+          }
+        }
+
+        sendButton.addEventListener('click', () => { handleSendAction(); });
+        messageInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendAction();
+          }
+        });
         attachButton.addEventListener('click', () => imageInput.click());
-        imageInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                sendMessage(null, file);
-                imageInput.value = '';
-            }
+        imageInput.addEventListener('change', async (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          await handleImageFileSend(file);
+          imageInput.value = '';
         });
-
     </script>
 </body>
 </html>
